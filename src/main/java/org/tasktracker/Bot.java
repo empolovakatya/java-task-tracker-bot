@@ -22,10 +22,23 @@ public class Bot extends TelegramLongPollingBot {
             long chatId = update.getMessage().getChatId();
             String text = update.getMessage().getText();
 
-            sendReply(chatId, "message: " + text);
+            handleMessage(chatId, text);
         }
     }
 
+    private void handleMessage(long chatId, String text) {
+        switch (text) {
+            case "/start" -> sendReply(chatId, "Я твой трекер задач \nНапиши /help чтобы узнать что я умею.");
+            case "/help"  -> sendReply(chatId, """
+                Вот что я умею:
+                /newtask — создать задачу
+                /list — мои задачи
+                /done [id] — отметить выполненной
+                /delete [id] — удалить задачу
+                """);
+            default -> sendReply(chatId, "Не понимаю. Напиши /help");
+        }
+    }
     private void sendReply(long chatId, String text) {
         try {
             execute(SendMessage.builder()
