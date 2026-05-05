@@ -1,9 +1,13 @@
 package org.tasktracker;
 
+import org.tasktracker.model.User;
+import org.tasktracker.repository.UserRepository;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.sql.SQLException;
 
 public class Bot extends TelegramLongPollingBot {
 
@@ -27,6 +31,13 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private void handleMessage(long chatId, String text) {
+         try {
+             String username = "unknown";
+             User user = userRepository.findOrCreate(chatId, username);
+             System.out.println("Пользователь: " + user.getId() + " " + user.getUsername());
+         } catch (SQLException e) {
+             e.printStackTrace();
+         }
         switch (text) {
             case "/start" -> sendReply(chatId, "Я твой трекер задач \nНапиши /help чтобы узнать что я умею.");
             case "/help"  -> sendReply(chatId, """
@@ -49,4 +60,5 @@ public class Bot extends TelegramLongPollingBot {
             e.printStackTrace();
         }
     }
+    private final UserRepository userRepository = new UserRepository();
 }

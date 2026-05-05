@@ -2,6 +2,7 @@ package org.tasktracker;
 
 import org.tasktracker.config.AppConfig;
 import org.tasktracker.db.DatabaseConnection;
+import org.tasktracker.db.SchemaInitializer;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
@@ -14,6 +15,9 @@ public class Main {
         String token = AppConfig.getBotToken();
 
         Bot bot = new Bot(token);
+
+        SchemaInitializer.init();
+
         TelegramBotsApi api = new TelegramBotsApi(DefaultBotSession.class);
         api.registerBot(bot);
         try (Connection conn = DatabaseConnection.getConnection()) {
@@ -21,5 +25,6 @@ public class Main {
         } catch (SQLException e) {
             System.out.println("Ошибка подключения: " + e.getMessage());
         }
+
     }
 }
