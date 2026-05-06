@@ -6,9 +6,6 @@ import org.tasktracker.model.User;
 
 import java.sql.*;
 
-import static org.apache.http.HttpHeaders.FROM;
-import static org.postgresql.core.SqlCommandType.SELECT;
-
 public class UserRepository {
 
     public User findOrCreate(long telegramId, String username) throws SQLException {
@@ -21,13 +18,22 @@ public class UserRepository {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
+                // обновляем username если изменился
+                String updateSql = "UPDATE users SET username = ? WHERE telegram_id = ?";
+                try (Connection c2 = DatabaseConnection.getConnection();
+                     PreparedStatement ps2 = c2.prepareStatement(updateSql)) {
+                    ps2.setString(1, username);
+                    ps2.setLong(2, telegramId);
+                    ps2.executeUpdate();
+                }
                 return new User(
                         rs.getLong("id"),
                         rs.getLong("telegram_id"),
-                        rs.getString("username")
+                        username // возвращаем актуальный username
                 );
             }
         }
+
         String insertSql = "INSERT INTO users (telegram_id, username) VALUES (?, ?) RETURNING id";
 
         try (Connection conn = DatabaseConnection.getConnection();

@@ -10,7 +10,14 @@ CREATE TABLE IF NOT EXISTS tasks (
     title       VARCHAR(500) NOT NULL,
     category    VARCHAR(100),
     status      VARCHAR(50) NOT NULL DEFAULT 'TODO',
-    priority    VARCHAR(50) NOT NULL DEFAULT 'MEDIUM',
     deadline    TIMESTAMP,
     created_at  TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS sent_notifications (
+    id                BIGSERIAL PRIMARY KEY,
+    task_id           BIGINT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+    notification_type VARCHAR(50) NOT NULL,
+    sent_at           TIMESTAMP DEFAULT NOW(),
+    UNIQUE(task_id, notification_type)
 );
