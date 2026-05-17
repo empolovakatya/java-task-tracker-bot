@@ -48,14 +48,19 @@ public class Bot extends TelegramLongPollingBot {
 
     private void handleMessage(long chatId, String text, String username) {
         try {
+            if (username == null) username = "unknown";
             User user = userRepository.findOrCreate(chatId, username);
             State state = states.getOrDefault(chatId, State.IDLE);
 
-            if (text.startsWith("/")) {
+            // команды всегда обрабатываются первыми — даже во время диалога
+            if (text.startsWith("/") && !text.equals("/skip")) {
                 handleCommand(chatId, text, user);
-            } else {
+            } else if (state != State.IDLE) {
                 handleState(chatId, text, user, state);
+            } else {
+                sendReply(chatId, "Не понимаю. Напишите /help");
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
             sendReply(chatId, "Произошла ошибка, попробуйте еще раз");
@@ -186,16 +191,36 @@ public class Bot extends TelegramLongPollingBot {
         long id = parseId(chatId, text);
         if (id < 0) return;
 
-        taskRepository.updateStatus(id, "DONE");
-        sendReply(chatId, "✅ Задача [" + id + "] выполнена!");
+        taskRepository.findById(id).ifPresentOrElse(task -> {
+            if (task.getUserId() != user.getId()) {
+                sendReply(chatId, "Это не твоя задача.");
+                return;
+            }
+            try {
+                taskRepository.updateStatus(id, "DONE");
+                sendReply(chatId, "✅ Задача [" + id + "] выполнена!");
+            } catch (SQLException e) {
+                sendReply(chatId, "Ошибка при обновлении задачи.");
+            }
+        }, () -> sendReply(chatId, "Задача не найдена."));
     }
 
     private void handleDelete(long chatId, String text, User user) throws SQLException {
         long id = parseId(chatId, text);
         if (id < 0) return;
 
-        taskRepository.delete(id);
-        sendReply(chatId, "🗑 Задача [" + id + "] удалена.");
+        taskRepository.findById(id).ifPresentOrElse(task -> {
+            if (task.getUserId() != user.getId()) {
+                sendReply(chatId, "Это не твоя задача.");
+                return;
+            }
+            try {
+                taskRepository.delete(id);
+                sendReply(chatId, "🗑 Задача [" + id + "] удалена.");
+            } catch (SQLException e) {
+                sendReply(chatId, "Ошибка при удалении задачи.");
+            }
+        }, () -> sendReply(chatId, "Задача не найдена."));
     }
 
     private long parseId(long chatId, String text) {
