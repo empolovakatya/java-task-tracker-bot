@@ -118,19 +118,19 @@ public class Bot extends TelegramLongPollingBot {
     private void startNewTask(long chatId, User user) {
         drafts.put(chatId, new Task(user.getId(), "", "", null));
         states.put(chatId, State.AWAIT_TITLE);
-        sendReply(chatId, "📝 Введи название задачи:");
+        sendReply(chatId, "Введи название задачи:");
     }
 
     private void awaitTitle(long chatId, String text, User user) {
         drafts.get(chatId).setTitle(text);
         states.put(chatId, State.AWAIT_CATEGORY);
-        sendReply(chatId, "📂 Введи категорию:");
+        sendReply(chatId, "Введи категорию:");
     }
 
     private void awaitCategory(long chatId, String text) {
         drafts.get(chatId).setCategory(text);
         states.put(chatId, State.AWAIT_DEADLINE);
-        sendReply(chatId, "📅 Введи дедлайн в формате дд.мм.гггг чч:мм\nили /skip чтобы пропустить:");
+        sendReply(chatId, "Введи дедлайн в формате дд.мм.гггг чч:мм\nили /skip чтобы пропустить:");
     }
 
     private void awaitDeadline(long chatId, String text, User user) throws SQLException {
@@ -142,7 +142,7 @@ public class Bot extends TelegramLongPollingBot {
                         DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
                 draft.setDeadline(deadline);
             } catch (Exception e) {
-                sendReply(chatId, "⚠️ Неверный формат. Попробуй ещё раз:\nПример: 25.12.2025 18:00");
+                sendReply(chatId, "Неверный формат. Попробуй ещё раз:\nПример: 25.12.2025 18:00");
                 return;
             }
         }
@@ -150,7 +150,7 @@ public class Bot extends TelegramLongPollingBot {
         taskRepository.save(draft);
         states.remove(chatId);
         drafts.remove(chatId);
-        sendReply(chatId, "✅ Задача создана: " + draft.getTitle());
+        sendReply(chatId, "Задача создана: " + draft.getTitle());
     }
     private final UserRepository userRepository = new UserRepository();
     private void listTasks(long chatId, String text, User user) throws SQLException {
@@ -172,7 +172,7 @@ public class Bot extends TelegramLongPollingBot {
             }
         }
 
-        StringBuilder sb = new StringBuilder("📋 Твои задачи:\n\n");
+        StringBuilder sb = new StringBuilder("Твои задачи:\n\n");
         for (Task t : tasks) {
             sb.append("🔹 [").append(t.getId()).append("] ").append(t.getTitle()).append("\n");
             sb.append("   Категория: ").append(t.getCategory()).append("\n");
@@ -198,7 +198,7 @@ public class Bot extends TelegramLongPollingBot {
             }
             try {
                 taskRepository.updateStatus(id, "DONE");
-                sendReply(chatId, "✅ Задача [" + id + "] выполнена!");
+                sendReply(chatId, "Задача [" + id + "] выполнена!");
             } catch (SQLException e) {
                 sendReply(chatId, "Ошибка при обновлении задачи.");
             }
@@ -216,7 +216,7 @@ public class Bot extends TelegramLongPollingBot {
             }
             try {
                 taskRepository.delete(id);
-                sendReply(chatId, "🗑 Задача [" + id + "] удалена.");
+                sendReply(chatId, "Задача [" + id + "] удалена.");
             } catch (SQLException e) {
                 sendReply(chatId, "Ошибка при удалении задачи.");
             }

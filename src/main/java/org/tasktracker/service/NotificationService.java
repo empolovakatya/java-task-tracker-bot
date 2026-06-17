@@ -36,7 +36,6 @@ public class NotificationService {
 
     private void check() {
         try {
-            System.out.println("Текущее время JVM: " + LocalDateTime.now());
             List<Task> tasks = taskRepository.findActiveWithDeadline();
             LocalDateTime now = LocalDateTime.now();
 
@@ -46,7 +45,7 @@ public class NotificationService {
                 if (minutesLeft >= 1380 && minutesLeft <= 1440)  {
                     if (!notificationSent(task.getId(), "DEADLINE_24H")) {
                         sendNotification(task, "DEADLINE_24H",
-                                "⏰ Напоминание! До дедлайна задачи «" + task.getTitle() + "» осталось 24 часа.");
+                                "Напоминание! До дедлайна задачи «" + task.getTitle() + "» осталось 24 часа.");
                     }
                 }
             }
